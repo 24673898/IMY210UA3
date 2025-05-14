@@ -1,0 +1,40 @@
+{
+  "kind": "collectionType",
+  "collectionName": "blog_posts",
+  "info": {
+    "singularName": "blog-post",
+    "pluralName": "blog-posts",
+    "displayName": "Blog Post",
+    "description": ""
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "Title": {
+      "type": "string"
+    },
+    "Author": {
+      "type": "string"
+    },
+    "Content": {
+      "type": "blocks"
+    },
+    "Category": {
+      "type": "enumeration",
+      "enum": [
+        "Travel",
+        "Food ",
+        "Life"
+      ]
+    },
+    "snippet": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "Title",
+      "required": true
+    }
+  }
+}

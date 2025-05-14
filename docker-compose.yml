@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  strapi:
+    build: ./strapi-blog
+    container_name: strapi-container
+    ports:
+      - "1337:1337"
+    env_file:
+      - ./strapi-blog/.env
+    volumes:
+      - strapi-data:/app/public/uploads
+      - strapi-config:/app/config
+    restart: unless-stopped
+    networks:
+      - blog-network
+
+  nuxt:
+    build: ./nuxt-blog
+    container_name: nuxt-container
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NUXT_PUBLIC_STRAPI_URL=http://strapi:1337
+    depends_on:
+      - strapi
+    restart: unless-stopped
+    networks:
+      - blog-network
+
+volumes:
+  strapi-data:
+  strapi-config:
+
+networks:
+  blog-network:
+    driver: bridge
