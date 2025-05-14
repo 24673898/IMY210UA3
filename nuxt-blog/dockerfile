@@ -1,5 +1,5 @@
-# Use the official Node.js runtime as the base image
-FROM node:18-alpine
+# Stage 1: Build
+FROM node:18-alpine AS builder
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -8,29 +8,40 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --omit=dev
 
 # Copy the entire application code
 COPY . .
 
-# Build the application for production
+# Build the application
 RUN npm run build
 
-# Create a non-root user
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nuxtjs -u 1001
+# Stage 2: Runtime
+FROM node:18-alpine
 
-# Change ownership of the app directory
-RUN chown -R nuxtjs:nodejs /app
+# Set the working directory inside the container
+WORKDIR /app
 
-# Switch to non-root user
-USER nuxtjs
+# Copy only the built application and necessary files
+COPY --from=builder /app/build ./build
+COPY --from=builder /app/package*.json ./
 
-# Expose the port NuxtJS will run on (3000 is default)
-EXPOSE 3000
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Create necessary directories and set permissions
+RUN mkdir -p /app/public/uploads && \
+    chown -R node:node /app && \
+    chmod -R 750 /app
+
+# Switch to non-root user for security
+USER node
+
+# Expose the port Strapi will run on
+EXPOSE 1337
 
 # Set environment to production
 ENV NODE_ENV=production
 
-# Start the application in preview mode (for production builds)
-CMD ["npm", "run", "preview"]
+# Start the application
+CMD ["npm", "run", "start"]
